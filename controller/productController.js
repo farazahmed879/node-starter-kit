@@ -41,7 +41,7 @@ const ProductController = {
       // if (isSideMenuExist)
       //   return res.status(404).json({ message: "Already Exist" });
       // const data = await ProductstModel.create({ content, type });
-      return res.status(201).json({ message: "Client  Created", data: data });
+      return res.status(201).json({ message: "Client  Updated", data: data });
     } catch (e) {
       res.status(500).json({ message: "Internal server error" });
     }

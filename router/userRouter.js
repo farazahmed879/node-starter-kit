@@ -19,5 +19,6 @@ router.post("/", UserController.signUp);
 router.get("/", isLoggedIn, restrictTo(["ADMIN"]), UserController.getAll);
 router.post("/login", UserController.login);
 router.post("/upload", upload.single("file"), UserController.uploadProfile);
+router.get("/id/:id", isLoggedIn, UserController.getById);
 
 module.exports = router;
