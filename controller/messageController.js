@@ -6,7 +6,7 @@ const createMessage = async (req, res) => {
   const message = new MessageModel({ chatId, senderId, text });
 
   try {
-    const response = await messsage.save();
+    const response = await message.save();
     res.status(200).json(response);
   } catch (error) {
     console.log(error);
