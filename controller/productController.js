@@ -35,13 +35,13 @@ const ProductController = {
   update: async (req, res) => {
     try {
       const body = req.body;
-      const isSideMenuExist = await ProductstModel.findByIdAndUpdate(body.id, {
+      const response = await ProductstModel.findByIdAndUpdate(body.id, {
         body,
       });
-      // if (isSideMenuExist)
-      //   return res.status(404).json({ message: "Already Exist" });
-      // const data = await ProductstModel.create({ content, type });
-      return res.status(201).json({ message: "Client  Updated", data: data });
+
+      return res
+        .status(201)
+        .json({ message: "Client  Updated", data: response });
     } catch (e) {
       res.status(500).json({ message: "Internal server error" });
     }

@@ -8,6 +8,7 @@ const productRouter = require("./router/productRouter");
 const userRouter = require("./router/userRouter");
 const chatRouter = require("./router/chatRouter");
 const messageRouter = require("./router/messageRouter");
+const notificationRouter = require("./router/notificationRouter");
 const { Server } = require("socket.io");
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/product", productRouter);
 app.use("/users", userRouter);
 app.use("/chats", chatRouter);
 app.use("/messages", messageRouter);
+app.use("/notifications", notificationRouter);
 
 dbConnection();
 
