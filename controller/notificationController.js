@@ -37,8 +37,30 @@ const markAllAsReadByUserId = async (req, res) => {
     return res
       .status(201)
       .json({ message: "All Notification Marked as Read", data: result });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
 
+const markAllAsReadByUserIdAndSenderId = async (req, res) => {
+  const { userId, senderId } = req.body;
+  console.log("userId", userId);
+  console.log("senderId", senderId);
+  try {
+    const result = await NotificationsModel.updateMany(
+      { userId, senderId, isRead: false }, // Condition to find unread notifications for the user
+      { $set: { isRead: true } } // Update to mark as read
+    );
 
+    console.log(result);
+
+    return res
+      .status(201)
+      .json({
+        message: "All This User Notification Marked as Read",
+        data: result,
+      });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -68,4 +90,5 @@ module.exports = {
   markAllAsReadByUserId,
   getAllNotificationByUserId,
   createNotification,
+  markAllAsReadByUserIdAndSenderId,
 };

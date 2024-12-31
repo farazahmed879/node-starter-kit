@@ -4,12 +4,14 @@ const {
   markAsRead,
   markAllAsReadByUserId,
   getAllNotificationByUserId,
-  createNotification
+  createNotification,
+  markAllAsReadByUserIdAndSenderId,
 } = require("../controller/notificationController");
 
 router.post("/", createNotification);
 router.post("/markRead/", markAsRead);
 router.post("/markAllRead/", markAllAsReadByUserId);
+router.post("/markReadByUserId/", markAllAsReadByUserIdAndSenderId);
 router.get("/:userId", getAllNotificationByUserId);
 
 module.exports = router;
