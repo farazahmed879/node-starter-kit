@@ -6,7 +6,8 @@ const validator = require("validator");
 const UserController = {
   getAll: async (req, res) => {
     try {
-      const data = await UserModel.find({});
+      const role = req.params.role;
+      const data = await UserModel.find({ role });
       return res.status(200).json({ message: "success", data: data });
     } catch (err) {
       res.status(500).json({ message: err });
@@ -51,7 +52,7 @@ const UserController = {
 
       return res
         .status(201)
-        .json({ message: "User  Created Successfully", data: user });
+        .json({ message: "User Created Successfully", data: user });
     } catch (err) {
       return res.status(500).json({ message: err });
     }
