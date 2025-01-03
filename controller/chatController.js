@@ -1,8 +1,12 @@
 const ChatsModel = require("../models/chat");
 
-const createChat = async (req, res) => {
+const create = async (req, res) => {
   const { firstId, secondId } = req.body;
-  console.log(req?.body);
+  const response = await createChat(firstId, secondId);
+  res.status(200).json(response);
+};
+
+const createChat  = async ({ firstId, secondId }) => {
   try {
     const chat = await ChatsModel.findOne({
       members: { $all: [firstId, secondId] },
@@ -14,8 +18,7 @@ const createChat = async (req, res) => {
     });
 
     const response = await newChat.save();
-
-    res.status(200).json(response);
+    return response;
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -47,4 +50,4 @@ const findChat = async (req, res) => {
   }
 };
 
-module.exports = { createChat, findUserChats, findChat };
+module.exports = { createChat, findUserChats, findChat, create };
