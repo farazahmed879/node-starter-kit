@@ -5,6 +5,7 @@ const {
   login,
   uploadProfile,
   getById,
+  userActivation,
 } = require("../controller/userController");
 
 const { isLoggedIn, restrictTo } = require("../middleware/auth");
@@ -28,5 +29,6 @@ router.get("/:role?", isLoggedIn, getAll);
 router.post("/login", login);
 router.post("/upload", upload.single("file"), uploadProfile);
 router.get("/id/:id", isLoggedIn, getById);
+router.patch("/activation", isLoggedIn, userActivation);
 
 module.exports = router;

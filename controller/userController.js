@@ -118,6 +118,45 @@ const createToken = async (user) => {
   return token;
 };
 
+
+const userActivation = async (req, res) => {
+  try {
+    const { id, isActive } = req.body; // Get the user ID and isActive flag from request body
+
+    // Validate the 'isActive' value
+    if (typeof isActive !== "boolean") {
+      return res
+        .status(400)
+        .json({ message: "'isActive' must be a boolean value" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      id, // The user's ID from the body
+      { $set: { isActive: isActive } }, // Set the isActive field to the provided value
+      { new: true } // Return the updated user document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({
+      message: `User ${isActive ? "activated" : "deactivated"} successfully`,
+      data: updatedUser,
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "Error updating user", error: err.message });
+  }
+}
+
 module.exports = {
   getAll,
   getById,
@@ -126,4 +165,5 @@ module.exports = {
   uploadProfile,
   verifyToken,
   createToken,
+  userActivation
 };

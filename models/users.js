@@ -17,11 +17,16 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       require: false,
-      default: "NORMAL"
+      default: "NORMAL",
     },
     file: {
       type: String,
       require: false,
+    },
+    isActive: {
+      type: Boolean,
+      require: false,
+      default: false,
     },
   },
   { timestamps: true }
