@@ -11,7 +11,6 @@ const messageRouter = require("./router/messageRouter");
 const notificationRouter = require("./router/notificationRouter");
 const requestRouter = require("./router/requestRouter");
 
-
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -39,3 +38,8 @@ app.get("/", (req, res) => {
   res.status(200).send("<h1>Welcome to backend</h1>");
 });
 
+
+
+app.listen(port, () => {
+  console.log("Server is running");
+});
