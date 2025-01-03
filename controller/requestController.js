@@ -37,7 +37,9 @@ const acceptRequest = async (req, res) => {
 
 const getAll = async (req, res) => {
   try {
-    const response = await RequestsModel.find({ isAccepted: false });
+    const response = await RequestsModel.find({ isAccepted: false })
+      .populate("senderId")
+      .exec();
     console.log(response);
     res.status(200).json(response);
   } catch (error) {
