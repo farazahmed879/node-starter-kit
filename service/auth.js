@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 const setUser = (user, secret) => {
-  console.log(user);
   const payload = {
     _id: user._id,
     email: user.name,

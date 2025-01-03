@@ -20,7 +20,6 @@ const isLoggedIn = (req, res, next) => {
 const restrictTo =
   (roles = []) =>
   (req, res, next) => {
-    console.log("restrictTo", req.users);
     if (!req.user || !roles.includes(req.user?.role)) {
       return res.status(401).send("Unauthorized: Insufficient permissions");
     }

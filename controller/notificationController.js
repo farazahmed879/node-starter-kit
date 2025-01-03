@@ -45,15 +45,13 @@ const markAllAsReadByUserId = async (req, res) => {
 
 const markAllAsReadByUserIdAndSenderId = async (req, res) => {
   const { userId, senderId } = req.body;
-  console.log("userId", userId);
-  console.log("senderId", senderId);
+
   try {
     const result = await NotificationsModel.updateMany(
       { userId, senderId, isRead: false }, // Condition to find unread notifications for the user
       { $set: { isRead: true } } // Update to mark as read
     );
 
-    console.log(result);
 
     return res
       .status(201)

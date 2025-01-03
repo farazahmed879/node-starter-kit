@@ -6,12 +6,12 @@ const create = async (req, res) => {
   res.status(200).json(response);
 };
 
-const createChat  = async ({ firstId, secondId }) => {
+const createChat = async ({ firstId, secondId }) => {
   try {
     const chat = await ChatsModel.findOne({
       members: { $all: [firstId, secondId] },
     });
-    if (chat) return res.status(200).json(chat);
+    if (chat) throw new Error("Chat is already created");
 
     const newChat = new ChatsModel({
       members: [firstId, secondId],
@@ -27,9 +27,10 @@ const createChat  = async ({ firstId, secondId }) => {
 
 const findUserChats = async (req, res) => {
   const userId = req.params.userId;
-
+  console.log("findUserChats");
   try {
     const chats = await ChatsModel.find({ members: { $in: [userId] } });
+    console.log(chats);
     res.status(200).json(chats);
   } catch (error) {
     console.log(error);

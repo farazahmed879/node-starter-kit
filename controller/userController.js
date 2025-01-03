@@ -23,7 +23,6 @@ const getById = async (req, res) => {
 const signUp = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
-    // console.log(name, email, password, role);
     const hasUser = await UserModel.findOne({ email: email });
     if (hasUser)
       return res.status(400).json({ message: "email already registered" });
