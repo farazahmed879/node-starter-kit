@@ -1,4 +1,5 @@
 const ChatsModel = require("../models/chat");
+const { getLastMessage } = require("./messageController");
 
 const create = async (req, res) => {
   const { firstId, secondId } = req.body;
@@ -6,14 +7,14 @@ const create = async (req, res) => {
   res.status(200).json(response);
 };
 
-const createChat = async ( firstId, secondId ) => {
+const createChat = async (firstId, secondId) => {
   try {
-    console.log("First ID", firstId)
-    console.log("Second ID", secondId)
+    console.log("First ID", firstId);
+    console.log("Second ID", secondId);
     const chat = await ChatsModel.findOne({
       members: { $all: [firstId, secondId] },
     });
-    console.log('This is chat',chat)
+    console.log("This is chat", chat);
     // if (chat) throw new Error("Chat is already created");
 
     const newChat = new ChatsModel({
@@ -29,11 +30,15 @@ const createChat = async ( firstId, secondId ) => {
 
 const findUserChats = async (req, res) => {
   const userId = req.params.userId;
-  console.log("findUserChats");
   try {
     const chats = await ChatsModel.find({ members: { $in: [userId] } });
-    console.log(chats);
-    res.status(200).json(chats);
+    const newChats = await Promise.all(
+      chats.map(async (e) => {
+        const lastMessage = await getLastMessage(e?._id);
+        return { ...e.toObject(), lastMessage };
+      })
+    );
+    res.status(200).json(newChats);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
