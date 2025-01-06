@@ -7,11 +7,12 @@ const {
   createNotification,
   markAllAsReadByUserIdAndSenderId,
 } = require("../controller/notificationController");
+const { isLoggedIn } = require("../middleware/auth");
 
-router.post("/", createNotification);
-router.post("/markRead/", markAsRead);
-router.post("/markAllRead/", markAllAsReadByUserId);
-router.post("/markReadByUserId/", markAllAsReadByUserIdAndSenderId);
-router.get("/:userId", getAllNotificationByUserId);
+router.post("/",isLoggedIn, createNotification);
+router.post("/markRead/",isLoggedIn, markAsRead);
+router.post("/markAllRead/",isLoggedIn, markAllAsReadByUserId);
+router.post("/markReadByUserId/",isLoggedIn, markAllAsReadByUserIdAndSenderId);
+router.get("/:userId",isLoggedIn, getAllNotificationByUserId);
 
 module.exports = router;

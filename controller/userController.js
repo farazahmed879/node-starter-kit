@@ -14,12 +14,17 @@ const getAll = async (req, res) => {
 };
 const getById = async (req, res) => {
   try {
-    const data = await UserModel.findById(req.params.id);
+    const data = await findUserById(req.params.id);
     return res.status(200).json({ message: "success", data: data });
   } catch (err) {
     res.status(500).json({ message: err });
   }
 };
+
+const findUserById = async (userId) => {
+  return await UserModel.findById(userId);
+};
+
 const signUp = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -57,8 +62,6 @@ const signUp = async (req, res) => {
 };
 const login = async (req, res) => {
   try {
-
-    console.log(req.body)
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
 
@@ -119,7 +122,6 @@ const createToken = async (user) => {
   return token;
 };
 
-
 const userActivation = async (req, res) => {
   try {
     const { id, isActive } = req.body; // Get the user ID and isActive flag from request body
@@ -135,7 +137,6 @@ const userActivation = async (req, res) => {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    
     const updatedUser = await UserModel.findByIdAndUpdate(
       id, // The user's ID from the body
       { $set: { isActive: isActive } }, // Set the isActive field to the provided value
@@ -156,7 +157,7 @@ const userActivation = async (req, res) => {
       .status(500)
       .json({ message: "Error updating user", error: err.message });
   }
-}
+};
 
 module.exports = {
   getAll,
@@ -166,5 +167,6 @@ module.exports = {
   uploadProfile,
   verifyToken,
   createToken,
-  userActivation
+  userActivation,
+  findUserById
 };

@@ -3,11 +3,12 @@ const router = express.Router();
 const {
   findUserChats,
   findChat,
-  create
+  create,
 } = require("../controller/chatController");
+const { isLoggedIn } = require("../middleware/auth");
 
-router.post("/", create);
-router.get("/:userId", findUserChats);
-router.get("/find/:firstId/:secondId", findChat);
+router.post("/", isLoggedIn, create);
+router.get("/:userId", isLoggedIn, findUserChats);
+router.get("/find/:firstId/:secondId", isLoggedIn, findChat);
 
 module.exports = router;

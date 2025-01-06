@@ -5,9 +5,10 @@ const {
   acceptRequest,
   getAll,
 } = require("../controller/requestController");
+const { isLoggedIn } = require("../middleware/auth");
 
-router.post("/", createRequest);
-router.put("/", acceptRequest);
-router.get("/", getAll);
+router.post("/", isLoggedIn, createRequest);
+router.put("/", isLoggedIn, acceptRequest);
+router.get("/", isLoggedIn, getAll);
 
 module.exports = router;

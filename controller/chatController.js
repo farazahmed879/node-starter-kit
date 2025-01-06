@@ -1,28 +1,38 @@
 const ChatsModel = require("../models/chat");
 const { getLastMessage } = require("./messageController");
+const { findUserById } = require("./userController");
 
 const create = async (req, res) => {
   const { firstId, secondId } = req.body;
-  const response = await createChat(firstId, secondId);
+  const chat = await createChat(firstId, secondId);
+
+  console.log("chat", chat);
+  const response = {
+    userDetail: chat.userDetail,
+    ...chat,
+  };
+
   res.status(200).json(response);
 };
 
 const createChat = async (firstId, secondId) => {
   try {
-    console.log("First ID", firstId);
-    console.log("Second ID", secondId);
     const chat = await ChatsModel.findOne({
       members: { $all: [firstId, secondId] },
     });
     console.log("This is chat", chat);
-    // if (chat) throw new Error("Chat is already created");
+    if (chat) return false;
 
     const newChat = new ChatsModel({
       members: [firstId, secondId],
     });
 
+    const user = await findUserById(secondId);
     const response = await newChat.save();
-    return response;
+
+    console.log("response", response);
+
+    return { data: response, userDetail: user };
   } catch (error) {
     console.log(error);
   }
@@ -34,8 +44,10 @@ const findUserChats = async (req, res) => {
     const chats = await ChatsModel.find({ members: { $in: [userId] } });
     const newChats = await Promise.all(
       chats.map(async (e) => {
+        const otherUserId = e.members.filter((i) => i != req.params.userId);
+        const user = await findUserById(otherUserId);
         const lastMessage = await getLastMessage(e?._id);
-        return { ...e.toObject(), lastMessage };
+        return { data: e.toObject(), lastMessage, userDetail: user };
       })
     );
     res.status(200).json(newChats);
