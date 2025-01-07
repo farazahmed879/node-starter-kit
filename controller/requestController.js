@@ -1,9 +1,19 @@
 const RequestsModel = require("../models/request");
-const { createChat } = require("./chatController");
+const { createChat, isOpenChat } = require("./chatController");
 
 const createRequest = async (req, res) => {
   const { senderId, agentId, text, isAccepted } = req.body;
   try {
+    const isChatExist = await isOpenChat(senderId);
+
+    // console.log("isChatExist", isChatExist);
+
+    if (isChatExist)
+      return res.status(200).json({
+        success: false,
+        message: "Your already have an open chat, please close it first",
+      });
+
     const requests = await RequestsModel.countDocuments({
       senderId,
       isAccepted: false,
@@ -30,16 +40,14 @@ const acceptRequest = async (req, res) => {
       $set: { isAccepted: true, agentId: agentId },
     });
 
-    console.log("acceptRequest", response);
+    // console.log("acceptRequest", response);
 
     if (!response) throw new Error("Request not found or could not be updated");
     //create chat
     const chatresponse = await createChat(
-      response.senderId.toString(),
-      agentId
+      agentId,
+      response.senderId.toString()
     );
-
-
 
     res.status(200).json({ ...response, chat: chatresponse });
   } catch (error) {

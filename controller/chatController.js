@@ -6,7 +6,7 @@ const create = async (req, res) => {
   const { firstId, secondId } = req.body;
   const chat = await createChat(firstId, secondId);
 
-  console.log("chat", chat);
+  // console.log("chat", chat);
   const response = {
     userDetail: chat.userDetail,
     ...chat,
@@ -20,17 +20,18 @@ const createChat = async (firstId, secondId) => {
     const chat = await ChatsModel.findOne({
       members: { $all: [firstId, secondId] },
     });
-    console.log("This is chat", chat);
+    // console.log("This is chat", chat);
     if (chat) return false;
 
     const newChat = new ChatsModel({
       members: [firstId, secondId],
     });
 
+    //first id will be always creator Id
     const user = await findUserById(secondId);
     const response = await newChat.save();
 
-    console.log("response", response);
+    // console.log("response", response);
 
     return { data: response, userDetail: user };
   } catch (error) {
@@ -70,4 +71,44 @@ const findChat = async (req, res) => {
   }
 };
 
-module.exports = { createChat, findUserChats, findChat, create };
+const isOpenChat = async (userId) => {
+  try {
+    const isAlreadyOpenChat = await ChatsModel.countDocuments({
+      members: { $in: [userId] },
+      isOpen: true,
+    });
+    // console.log("userId", userId);
+    // console.log("isAlreadyOpenChat", isAlreadyOpenChat);
+    if (isAlreadyOpenChat > 0) return true;
+    return false;
+  } catch (error) {
+    console.log(error);
+    // return false
+  }
+};
+
+const closeChat = async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    console.log("chatId", chatId);
+    const response = await ChatsModel.findByIdAndUpdate(
+      chatId,
+      { $set: { isOpen: false } },
+      { new: true }
+    ).exec();
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+module.exports = {
+  createChat,
+  findUserChats,
+  findChat,
+  create,
+  isOpenChat,
+  closeChat,
+};
