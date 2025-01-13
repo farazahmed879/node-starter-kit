@@ -6,7 +6,6 @@ const create = async (req, res) => {
   const { firstId, secondId } = req.body;
   const chat = await createChat(firstId, secondId);
 
-  // console.log("chat", chat);
   const response = {
     userDetail: chat.userDetail,
     ...chat,
@@ -19,8 +18,8 @@ const createChat = async (firstId, secondId) => {
   try {
     const chat = await ChatsModel.findOne({
       members: { $all: [firstId, secondId] },
+      isOpen: true,
     });
-    // console.log("This is chat", chat);
     if (chat) return false;
 
     const newChat = new ChatsModel({

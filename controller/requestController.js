@@ -1,12 +1,12 @@
 const RequestsModel = require("../models/request");
 const { createChat, isOpenChat } = require("./chatController");
+const { createMessage } = require("./messageController");
 
 const createRequest = async (req, res) => {
   const { senderId, agentId, text, isAccepted } = req.body;
   try {
     const isChatExist = await isOpenChat(senderId);
 
-    // console.log("isChatExist", isChatExist);
 
     if (isChatExist)
       return res.status(200).json({
@@ -40,7 +40,6 @@ const acceptRequest = async (req, res) => {
       $set: { isAccepted: true, agentId: agentId },
     });
 
-    // console.log("acceptRequest", response);
 
     if (!response) throw new Error("Request not found or could not be updated");
     //create chat
@@ -49,7 +48,16 @@ const acceptRequest = async (req, res) => {
       response.senderId.toString()
     );
 
-    res.status(200).json({ ...response, chat: chatresponse });
+
+    const messageResponse = await createMessage(
+      chatresponse?.data?._id.toString(),
+      response.senderId.toString(),
+      response.text
+    );
+
+    res
+      .status(200)
+      .json({ ...response, chat: chatresponse, message: messageResponse });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
