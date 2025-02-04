@@ -1,9 +1,15 @@
 const NotificationsModel = require("../models/notification");
 
 const createNotification = async (req, res) => {
-  const { senderId, userId, isRead, message } = req.body;
+  const { senderId, userId, isRead, message, chatId } = req.body;
 
-  const model = new NotificationsModel({ senderId, userId, isRead, message });
+  const model = new NotificationsModel({
+    senderId,
+    userId,
+    isRead,
+    message,
+    chatId,
+  });
 
   try {
     const response = await model.save();
@@ -44,21 +50,20 @@ const markAllAsReadByUserId = async (req, res) => {
 };
 
 const markAllAsReadByUserIdAndSenderId = async (req, res) => {
-  const { userId, senderId } = req.body;
+  const { userId, senderId, chatId } = req.body;
+
+  console.log("chatId", chatId);
 
   try {
     const result = await NotificationsModel.updateMany(
-      { userId, senderId, isRead: false }, // Condition to find unread notifications for the user
+      { userId, senderId, isRead: false, chatId }, // Condition to find unread notifications for the user
       { $set: { isRead: true } } // Update to mark as read
     );
 
-
-    return res
-      .status(201)
-      .json({
-        message: "All This User Notification Marked as Read",
-        data: result,
-      });
+    return res.status(201).json({
+      message: "All This User Notification Marked as Read",
+      data: result,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

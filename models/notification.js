@@ -5,6 +5,7 @@ const notificationSchema = new mongoose.Schema(
     userId: { type: String, require: true },
     isRead: { type: Boolean, require: false, default: false },
     message: { type: String, require: false, default: "" },
+    chatId: { type: String, require: false, default: "" },
   },
   { timestamps: true }
 );
