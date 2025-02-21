@@ -24,7 +24,9 @@ const getAllNotificationByUserId = async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const notifications = await NotificationsModel.find({ userId });
+    const notifications = await NotificationsModel.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(10);
     res.status(200).json(notifications);
   } catch (error) {
     console.log(error);
