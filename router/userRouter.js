@@ -6,6 +6,8 @@ const {
   uploadProfile,
   getById,
   userActivation,
+  logout,
+  updateUser
 } = require("../controller/userController");
 
 const { isLoggedIn, restrictTo } = require("../middleware/auth");
@@ -23,10 +25,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.post("/", signUp);
+router.post("/", upload.single("file"), signUp);
+router.put("/:id", upload.single("file"), updateUser);
 router.get("/:role?", isLoggedIn, getAll);
 // router.get("/", isLoggedIn, restrictTo(["ADMIN"]), getAll);
+
 router.post("/login", login);
+router.post("/logout", logout);
 router.post("/upload", upload.single("file"), uploadProfile);
 router.get("/id/:id", isLoggedIn, getById);
 router.patch("/activation", isLoggedIn, userActivation);

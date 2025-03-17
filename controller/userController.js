@@ -5,9 +5,31 @@ const validator = require("validator");
 
 const getAll = async (req, res) => {
   try {
-    const role = req.params.role;
-    const data = await UserModel.find(role ? { role } : {});
-    return res.status(200).json({ message: "success", data: data });
+    const { role } = req.params; // Get role from params
+    const { page = 1, limit = 10 } = req.query; // Get page & limit from query params (defaults: page=1, limit=10)
+
+    const filter = role ? { role: role } : {};
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const skip = (pageNumber - 1) * limitNumber;
+    const data = await UserModel.find(filter).skip(skip).limit(limitNumber);
+
+    // if (!data.length) {
+    //   return res.status(404).json({ message: "No users found", data: [] });
+    // }
+
+    const totalRecords = await UserModel.countDocuments(filter);
+
+    console.log(data, pageNumber, limitNumber, skip);
+    return res.status(200).json({
+      message: "success",
+      page: pageNumber,
+      limit: limitNumber,
+      totalRecords,
+      totalPages: Math.ceil(totalRecords / limitNumber),
+      data,
+    });
   } catch (err) {
     res.status(500).json({ message: err });
   }
@@ -27,13 +49,27 @@ const findUserById = async (userId) => {
 
 const signUp = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, isActive } = req.body;
+
+    if (req.file) {
+      console.log("Uploaded file:", req.file);
+      // You can save the file path to DB if needed
+    }
+
     const hasUser = await UserModel.findOne({ email: email });
     if (hasUser)
-      return res.status(400).json({ message: "email already registered" });
+      return res.status(400).json({
+        message: "email already registered",
+        data: null,
+        isSuccess: false,
+      });
 
-    // if (!name || !email || !password)
-    //   return res.status(400).json({ message: "All fields are required" });
+    if (!name || !email || !password)
+      return res.status(400).json({
+        message: "All fields are required",
+        data: null,
+        isSuccess: false,
+      });
 
     // console.log("validator(email)",validator(email))
 
@@ -51,20 +87,69 @@ const signUp = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      file: req.file.filename,
+      isActive,
     });
 
-    return res
-      .status(201)
-      .json({ message: "User Created Successfully", data: user });
+    return res.status(201).json({
+      message: "User Created Successfully",
+      data: user,
+      isSuccess: true,
+    });
   } catch (err) {
-    return res.status(500).json({ message: err });
+    return res.status(500).json({ message: err, data: null, isSuccess: false });
   }
 };
+
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params; // Get user ID from request params
+    const { name, email, password, role, isActive } = req.body;
+
+
+
+    // Find the existing user
+    let user = await UserModel.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        data: null,
+        isSuccess: false,
+      });
+    }
+
+    // Update user fields if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (password) user.password = await bcrypt.hash(password, 10); // Hash new password if provided
+    if (role) user.role = role;
+    if (isActive !== undefined) user.isActive = isActive;
+
+    // If a new file is uploaded, update the profile picture
+    if (req.file) {
+      console.log("Uploaded file:", req.file);
+      user.file = req.file.filename;
+    }
+
+    // Save the updated user
+    await user.save();
+
+    return res.status(200).json({
+      message: "User updated successfully",
+      data: user,
+      isSuccess: true,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message, data: null, isSuccess: false });
+  }
+};
+
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
-
+    // console.log("user", user);
     if (!user) {
       return res.status(404).json({ message: "No such user found", token: "" });
     }
@@ -79,12 +164,15 @@ const login = async (req, res) => {
     const token = setUser(user, "S3cUreK3y!2023#Taqr33b@t", {
       expiresIn: "3m",
     });
-    // const token = setUser(user, process.env.JWT_KEY, {
-    //   expiresIn: "3m",
-    // });
-    console.log("token", token);
-    // const token = setUser(user, process.env.JWT_KEY);
-    res.cookie("token", token);
+
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+    });
+
+    // res.cookie("userDetail", JSON.stringify(user));
 
     return res.status(200).json({
       message: "login success",
@@ -95,6 +183,11 @@ const login = async (req, res) => {
     return res.status(500).json({ message: "internal server error" });
   }
 };
+
+const tokenHai = async (req, res) => {
+  return res.json({ message: "failed", data: false });
+};
+
 const uploadProfile = async (req, res) => {
   // console.log("req uploadProfile", req.body);
   // console.log("req uploadProfile", req.file.path);
@@ -150,6 +243,7 @@ const userActivation = async (req, res) => {
     return res.status(200).json({
       message: `User ${isActive ? "activated" : "deactivated"} successfully`,
       data: updatedUser,
+      status: true,
     });
   } catch (err) {
     console.error(err);
@@ -157,6 +251,12 @@ const userActivation = async (req, res) => {
       .status(500)
       .json({ message: "Error updating user", error: err.message });
   }
+};
+
+const logout = async (req, res) => {
+  res.clearCookie("authToken");
+  res.clearCookie("userDetail");
+  res.json({ message: "Logged out successfully" });
 };
 
 module.exports = {
@@ -168,5 +268,8 @@ module.exports = {
   verifyToken,
   createToken,
   userActivation,
-  findUserById
+  findUserById,
+  logout,
+  tokenHai,
+  updateUser
 };
